@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.7.0" />
+		<PackageReference Include="Amazon.Lambda.TestUtilities" Version="2.0.0" />
+		<PackageReference Include="Moq" Version="4.20.69" />
+		<PackageReference Include="NUnit" Version="3.14.0" />
+		<PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\CheckRegistry.AddChecks\CheckRegistry.AddChecks.csproj" />
+	  <ProjectReference Include="..\CheckRegistry.Autofac\CheckRegistry.Autofac.csproj" />
+	  <ProjectReference Include="..\CheckRegistry.Commands\CheckRegistry.Commands.csproj" />
+	  <ProjectReference Include="..\CheckRegistry.DataAccess\CheckRegistry.DataAccess.csproj" />
+	  <ProjectReference Include="..\CheckRegistry.Domain\CheckRegistry.Domain.csproj" />
+	  <ProjectReference Include="..\CheckRegistry.ProxyLambdaLogger\CheckRegistry.ProxyLambdaLogger.csproj" />
+	</ItemGroup>
+
+
+
+</Project>

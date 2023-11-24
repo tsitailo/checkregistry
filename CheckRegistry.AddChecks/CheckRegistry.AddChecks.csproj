@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AsyncEnumerator" Version="4.0.2" />
+    <PackageReference Include="Autofac" Version="7.1.0" />
+    <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.0" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CheckRegistry.Autofac\CheckRegistry.Autofac.csproj" />
+    <ProjectReference Include="..\CheckRegistry.Commands\CheckRegistry.Commands.csproj" />
+    <ProjectReference Include="..\CheckRegistry.DataAccess\CheckRegistry.DataAccess.csproj" />
+    <ProjectReference Include="..\CheckRegistry.Domain\CheckRegistry.Domain.csproj" />
+    <ProjectReference Include="..\CheckRegistry.ProxyLambdaLogger\CheckRegistry.ProxyLambdaLogger.csproj" />
+    <PackageReference Include="AWSSDK.EventBridge" Version="3.7.200.19" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+
+  </ItemGroup>
+
+</Project>
