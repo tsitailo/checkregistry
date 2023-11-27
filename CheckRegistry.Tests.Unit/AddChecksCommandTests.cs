@@ -1,14 +1,15 @@
+using System.Diagnostics;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.TestUtilities;
-using AutoMapper;
 using CheckRegistry.AddChecks;
 using CheckRegistry.Commands;
-using CheckRegistry.DataAccess.Mappings;
+using CheckRegistry.DataAccess.Repositories;
 using CheckRegistry.Domain.Entities;
 using CheckRegistry.Domain.Interfaces;
 using Moq;
 using NUnit.Framework;
+using System.Text;
 
 
 namespace CheckRegistry.Tests.Unit;
@@ -45,14 +46,20 @@ public class AddChecksCommandTests
             return check.Id;
         });
 
+        var base64EncodedCheck = "e1wic2hvcElkXCI6IFwiMVwiLCBcIml0ZW1zXCI6IFt7XCJuYW1lXCI6XCJndW5cIiwgXCJhbW91bnRcIjpcIjJcIiwgXCJwcmljZVwiOlwiMTBcIn0sIHtcIm5hbWVcIjpcImNhclwiLCBcImFtb3VudFwiOlwiMVwiLCBcInByaWNlXCI6XCIxMDAwXCJ9XX0=";
+
+        var body = "{\"checks\": [\"" + base64EncodedCheck + "\", \"" + base64EncodedCheck + "\"]}";
+
         var apiGatewayProxyRequest = new APIGatewayProxyRequest
         {
 
             Headers = new Dictionary<string, string> { { "Host", "host.com" } },
             RequestContext = new APIGatewayProxyRequest.ProxyRequestContext { Path = "/path" },
-            Body =
-                @"{""checks"": [ ""{\""shopId\"": \""1\"", \""items\"": [{\""name\"":\""gun\"", \""amount\"":\""2\"", \""price\"":\""10\""}\"", {\""name\"":\""car\"", \""amount\"":\""1\"", \""price\"":\""1000\""}]}"", ""{\""shopId\"": \""1\"", \""items\"": [{\""name\"":\""gun\"", \""amount\"":\""3\"", \""price\"":\""10\""}, {\""name\"":\""car\"", \""amount\"":\""21\"", \""price\"":\""1000\""}""]}"
+            Body = "{\"data\":\"" + EncodeBase64(body) + "\"}"
+            //Data = "{\"checks\": [\"{\"shopId\": \"1\", \"items\": [{\"name\":\"gun\", \"amount\":\"2\", \"price\":\"10\"}, {\"name\":\"car\", \"amount\":\"1\", \"price\":\"1000\"}]}\", \"{\"shopId\": \"1\", \"items\": [{\"name\":\"gun\", \"amount\":\"3\", \"price\":\"10\"}, {\"name\":\"car\", \"amount\":\"21\", \"price\":\"1000\"}]}\"]}"
         };
+
+        Debug.WriteLine(apiGatewayProxyRequest.Body);
 
         var response = await _sut.Execute(apiGatewayProxyRequest);
 
@@ -62,5 +69,11 @@ public class AddChecksCommandTests
         
         _eventSenderMock.Verify(_ => _.Send(It.IsAny<BaseEvent>(), It.IsAny<ILambdaContext>()), Times.AtLeastOnce);
 
+    }
+
+    private  string EncodeBase64( string value)
+    {
+        var valueBytes = Encoding.UTF8.GetBytes(value);
+        return Convert.ToBase64String(valueBytes);
     }
 }

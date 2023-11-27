@@ -1,6 +1,8 @@
 using Amazon.DynamoDBv2.DataModel;
+using Amazon.Lambda.Core;
 using AutoMapper;
 using CheckRegistry.Domain.Interfaces;
+using Newtonsoft.Json;
 
 namespace CheckRegistry.DataAccess.Repositories;
 
@@ -8,55 +10,22 @@ public class CheckRegistryRepository : ICheckRegistryRepository
 {
     private readonly IDynamoDBContext _dbContext;
     private readonly IMapper _mapper;
+    private readonly ILambdaLogger _logger;
 
-    public CheckRegistryRepository(IDynamoDBContext dbContext, IMapper mapper)
+    public CheckRegistryRepository(IDynamoDBContext dbContext, IMapper mapper, ILambdaLogger logger)
     {
         _dbContext = dbContext;
         _mapper = mapper;
+        _logger = logger;
     }
-
-    //public async Task<DomainOperation> GetById(string id)
-    //{
-    //    var asyncSearch = _dbContext.QueryAsync<DBOperation>(id, QueryOperator.Equal, new[] {id},
-    //        new DynamoDBOperationConfig {IndexName = DatabaseConstants.GSI1IndexName});
-    //    var operations = await asyncSearch.GetRemainingAsync();
-    //    var operation = operations.FirstOrDefault();
-    //    return _mapper.Map<DomainOperation>(operation);
-    //}
-
-    //public async Task<DomainOperation> GetByCRunnerId(string crunnerId)
-    //{
-    //    var asyncSearch = _dbContext.QueryAsync<DBOperation>(nameof(DBOperation),
-    //        new DynamoDBOperationConfig
-    //        {
-    //            IndexName = DatabaseConstants.GSI2IndexName,
-    //            QueryFilter = {new ScanCondition("CRunnerId", ScanOperator.Equal, crunnerId)}
-    //        });
-    //    var operations = await asyncSearch.GetRemainingAsync();
-    //    var operation = operations.FirstOrDefault();
-    //    return _mapper.Map<DomainOperation>(operation);
-    //}
-
-    //public async Task<DomainOperation> GetByNWorkerIdAndOperationType(string nworkerId, OperationType operationType)
-    //{
-    //    var asyncSearch = _dbContext.QueryAsync<DBOperation>(nworkerId, QueryOperator.BeginsWith,
-    //        new[] {DatabaseConstants.OperationIdPrefix},
-    //        new DynamoDBOperationConfig
-    //        {
-    //            QueryFilter = new List<ScanCondition>
-    //            {
-    //                new(nameof(DomainOperation.OperationType), ScanOperator.Equal,
-    //                    operationType.ToString())
-    //            }
-    //        });
-    //    var operations = await asyncSearch.GetRemainingAsync();
-    //    var operation = operations.FirstOrDefault();
-    //    return _mapper.Map<DomainOperation>(operation);
-    //}
 
     public async Task<string> AddOrUpdate(Domain.Entities.Check check)
     {
+        _logger.LogLine($"Domain check: {JsonConvert.SerializeObject(check)}");
+
         var dbCheck = _mapper.Map<DataAccess.Entities.Check>(check);
+        _logger.LogLine($"DB check: {JsonConvert.SerializeObject(dbCheck)}");
+
         if (String.IsNullOrEmpty(dbCheck.Id))
         {
             dbCheck.Id = Guid.NewGuid().ToString("D");
@@ -66,20 +35,4 @@ public class CheckRegistryRepository : ICheckRegistryRepository
 
         return dbCheck.Id;
     }
-
-    //public async Task<List<DomainOperation>> GetUnfinishedOperations()
-    //{
-    //    var asyncSearch = _dbContext.QueryAsync<DBOperation>(nameof(DBOperation),
-    //        new DynamoDBOperationConfig
-    //        {
-    //            IndexName = DatabaseConstants.GSI2IndexName,
-    //            QueryFilter =
-    //            {
-    //                new ScanCondition(nameof(DomainOperation.OperationStatus), ScanOperator.In,
-    //                    OperationStatus.Pending.ToString(), OperationStatus.InProgress.ToString())
-    //            }
-    //        });
-    //    var operations = await asyncSearch.GetRemainingAsync();
-    //    return _mapper.Map<List<DomainOperation>>(operations);
-    //}
 }

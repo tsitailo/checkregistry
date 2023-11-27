@@ -21,6 +21,7 @@
 		<PackageReference Include="Moq" Version="4.20.69" />
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\CheckRegistry.AddChecks\CheckRegistry.AddChecks.csproj" />
 	  <ProjectReference Include="..\CheckRegistry.Autofac\CheckRegistry.Autofac.csproj" />
 	  <ProjectReference Include="..\CheckRegistry.DataAccess\CheckRegistry.DataAccess.csproj" />
 	  <ProjectReference Include="..\CheckRegistry.Domain\CheckRegistry.Domain.csproj" />

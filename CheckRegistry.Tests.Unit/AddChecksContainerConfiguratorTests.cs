@@ -27,7 +27,7 @@ public class AddChecksContainerConfiguratorTests
     [Test]
     public void Can_Configure_Container()
     {
-        var container = _sut.Configure();
+        var container = _sut.Configure().Build();
 
         Assert.NotNull(container);
         Assert.IsInstanceOf<IContainer>(container);
@@ -37,7 +37,7 @@ public class AddChecksContainerConfiguratorTests
     [Test]
     public void Can_Resolve_AddChecks_Command()
     {
-        var container = _sut.Configure();
+        var container = _sut.Configure(_lambdaLoggerMock.Object).Build();
         var scope = container.BeginLifetimeScope();
         var command = scope.Resolve<IProxyRequestCommand>(new NamedParameter("context", _lambdaContext));
         Assert.NotNull(command);

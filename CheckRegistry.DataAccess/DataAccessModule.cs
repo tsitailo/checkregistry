@@ -1,6 +1,5 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
-using Amazon.XRay.Recorder.Handlers.AwsSdk;
 using Autofac;
 using AutoMapper.Contrib.Autofac.DependencyInjection;
 using CheckRegistry.Autofac;

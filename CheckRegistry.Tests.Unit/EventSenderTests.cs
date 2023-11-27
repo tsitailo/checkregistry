@@ -5,7 +5,6 @@ using Amazon.Lambda.TestUtilities;
 using CheckRegistry.Domain.Interfaces;
 using CheckRegistry.Domain.Tools;
 using Moq;
-using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace CheckRegistry.Tests.Unit;

@@ -1,4 +1,6 @@
 ﻿using Amazon.EventBridge;
+using Amazon.Lambda.Core;
+using Amazon.Lambda.TestUtilities;
 using Amazon.XRay.Recorder.Handlers.AwsSdk;
 using Autofac;
 using CheckRegistry.Autofac;
@@ -12,13 +14,14 @@ namespace CheckRegistry.AddChecks;
 
 public class AddChecksContainerConfigurator : BaseModule, IContainerConfigurator
 {
-    public IContainer Configure()
+    public ContainerBuilder Configure(ILambdaLogger logger)
     {
         var builder = new ContainerBuilder();
         builder.RegisterModule<DataAccessModule>();
         builder.RegisterModule<LambdaLoggerModule>();
         builder.RegisterType<AddChecksCommand>().AsImplementedInterfaces();
         builder.RegisterType<ResponseBuilder>().AsSelf();
+        builder.RegisterInstance(logger).AsImplementedInterfaces();
 
         builder.Register(_ =>
                 IsDevelopment()
@@ -29,6 +32,12 @@ public class AddChecksContainerConfigurator : BaseModule, IContainerConfigurator
         builder.RegisterType<EventSender>().As<IEventSender>();
         AWSSDKHandler.RegisterXRay<IAmazonEventBridge>();
 
-        return builder.Build();
+
+        return builder;
+    }
+
+    public ContainerBuilder Configure()
+    {
+        return Configure(new TestLambdaLogger());
     }
 }

@@ -1,13 +1,7 @@
-﻿using System.Buffers;
-using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DataModel;
-using Amazon.DynamoDBv2.DocumentModel;
-using Amazon.Runtime;
+﻿using Amazon.Lambda.TestUtilities;
 using CheckRegistry.DataAccess.Repositories;
 using CheckRegistry.Domain.Entities;
-using CheckRegistry.Domain.Enums;
 using CheckRegistry.Domain.Interfaces;
-using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace CheckRegistry.Tests.Integration;
@@ -25,7 +19,7 @@ public class CheckRegistryRepositoryTests : BaseRepositoryTests
     [SetUp]
     public void OperationRepositoryTestsSetUp()
     {
-        _sut = new CheckRegistryRepository(_dynamoDbContext, _mapper);
+        _sut = new CheckRegistryRepository(_dynamoDbContext, _mapper, new TestLambdaLogger());
     }
 
 

@@ -1,8 +1,10 @@
+using Amazon.Lambda.Core;
 using Autofac;
 
 namespace CheckRegistry.Autofac;
 
 public interface IContainerConfigurator
 {
-    IContainer Configure();
+    ContainerBuilder Configure();
+    ContainerBuilder Configure(ILambdaLogger logger);
 }

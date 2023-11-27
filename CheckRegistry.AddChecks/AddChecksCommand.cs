@@ -1,4 +1,6 @@
 using System.Net;
+using System.Text;
+using Amazon.EventBridge.Model;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Amazon.Runtime.Internal;
@@ -6,9 +8,11 @@ using CheckRegistry.Commands;
 using CheckRegistry.DataAccess.Entities;
 using CheckRegistry.Domain.Events;
 using CheckRegistry.Domain.Interfaces;
+using CheckRegistry.Domain.Tools;
+using Microsoft.Extensions.Logging.EventLog;
 using Newtonsoft.Json;
-using static System.Net.Mime.MediaTypeNames;
 using Check = CheckRegistry.Domain.Entities.Check;
+using RegistrationResult = CheckRegistry.Domain.Entities.RegistrationResult;
 
 namespace CheckRegistry.AddChecks;
 
@@ -35,30 +39,49 @@ public class AddChecksCommand : IProxyRequestCommand
             var results = new List<string>();
             try
             {
-                var checks = JsonConvert.DeserializeObject<CheckData>(request.Body);
-                if (checks != null)
+                _context.Logger.LogLine(request.Body);
+
+                var envelop = JsonConvert.DeserializeObject<CheckEnvelop>(request.Body);
+
+                if (envelop != null)
                 {
-                    foreach (var checkData in checks.Checks)
+                    var data = DecodeBase64(envelop.Data); 
+
+                    var checks = JsonConvert.DeserializeObject<CheckData>(data);
+
+                    _context.Logger.LogLine($"Checks count : {checks?.Checks.Count}");
+
+                    var messages = new List<Task>();
+
+                    if (checks != null)
                     {
-                        Check check = new Check
+                        foreach (var checkData in checks.Checks)
                         {
-                            Id = Guid.NewGuid().ToString("D"),
-                            Data = checkData
-                        };
-                        string id = await InsertCheckIntoDb(check);
-                        results.Add(id);
+                            Check check = new Check
+                            {
+                                Id = Guid.NewGuid().ToString("D"),
+                                Data = checkData,
+                                Status = "PENDING",
+                                IssueDate = DateTime.Now.ToString("O"),
+                                RegistrationResults = new List<RegistrationResult>(),
+                            };
+                            string id = await InsertCheckIntoDb(check);
+                            results.Add(id);
 
-                        //todo: VerifyCheck();
+                            //todo: VerifyCheck();
 
-                        await SendRegisterCheckCommand(check);
+                            messages.Add(SendRegisterCheckCommand(check));
+                        }
                     }
+
+                    Task.WaitAll(messages.ToArray());
                 }
             }
             catch (Exception ex)
             {
                 //todo: return exception
             }
- 
+
             var responseBody = new AddChecksResponse();
             responseBody.Checks.AddRange(results);
 
@@ -74,20 +97,39 @@ public class AddChecksCommand : IProxyRequestCommand
         }
     }
 
+
     private async Task SendRegisterCheckCommand(Check check)
     {
-        var @event = new RegisterCheckEvent()
+        var @event = new RegisterCheckEvent
         {
-            ServiceName = "",
+            ServiceName = "CheckRegistry",
             CheckData = check.Data,
             CheckId = check.Id
         };
+
         await _eventSender.Send(@event, _context);
     }
 
 
     private async Task<string> InsertCheckIntoDb(Check check)
     {
-        return await _checkRepository.AddOrUpdate(check);
+        _context.Logger.LogLine(JsonConvert.SerializeObject(check));
+        try
+        {
+            return await _checkRepository.AddOrUpdate(check);
+        }
+        catch (Exception e)
+        {
+            _context.Logger.LogLine(e.Message);
+            _context.Logger.LogLine(e.StackTrace);
+            throw;
+        }
+
+    }
+
+    private string DecodeBase64(string value)
+    {
+        var valueBytes = System.Convert.FromBase64String(value);
+        return Encoding.UTF8.GetString(valueBytes);
     }
 }

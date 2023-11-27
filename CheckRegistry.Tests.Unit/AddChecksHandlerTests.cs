@@ -15,7 +15,7 @@ namespace CheckRegistry.Tests.Unit;
 public class AddChecksHandlerTests
 {
     private AddCheckHandler _sut;
-    private Mock<IContainerConfigurator> _containerConfiguratorMockMock;
+    private Mock<IContainerConfigurator> _containerConfiguratorMock;
     private Mock<ILambdaLogger> _lambdaLoggerMock;
     private ILambdaContext _lambdaContext;
 
@@ -24,9 +24,10 @@ public class AddChecksHandlerTests
     {
         _lambdaLoggerMock = new Mock<ILambdaLogger>();
         _lambdaContext = new TestLambdaContext {Logger = _lambdaLoggerMock.Object};
-        _containerConfiguratorMockMock = new Mock<IContainerConfigurator>();
-        _containerConfiguratorMockMock.Setup(_ => _.Configure()).Returns(BuildTestContainer);
-        _sut = new AddCheckHandler(_containerConfiguratorMockMock.Object);
+        _containerConfiguratorMock = new Mock<IContainerConfigurator>();
+        _containerConfiguratorMock.Setup(_ => _.Configure()).Returns(BuildTestContainer);
+        _containerConfiguratorMock.Setup(_ => _.Configure(_lambdaLoggerMock.Object)).Returns(BuildTestContainer);
+        _sut = new AddCheckHandler(_containerConfiguratorMock.Object);
     }
 
     [Test]
@@ -38,7 +39,7 @@ public class AddChecksHandlerTests
         Assert.IsInstanceOf<APIGatewayProxyResponse>(response);
     }
 
-    private static IContainer BuildTestContainer()
+    private static ContainerBuilder BuildTestContainer()
     {
         var getNWorkersCommandMock = new Mock<IProxyRequestCommand>();
         getNWorkersCommandMock.Setup(_ => _.Execute(It.IsAny<APIGatewayProxyRequest>()))
@@ -47,6 +48,6 @@ public class AddChecksHandlerTests
         var builder = new ContainerBuilder();
         builder.RegisterModule<DataAccessModule>();
         builder.RegisterInstance(getNWorkersCommandMock.Object).As<IProxyRequestCommand>();
-        return builder.Build();
+        return builder;
     }
 }
